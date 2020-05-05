@@ -60,7 +60,7 @@ class GHAapp < Sinatra::Application
     case request.env['HTTP_X_GITHUB_EVENT']
     when 'issues'
       if @payload['action'] === 'opened'
-        logger.debug 'An issue was opened!'
+        handle_issue_opened_event(@payload)
       end
     end
   end
@@ -69,7 +69,12 @@ class GHAapp < Sinatra::Application
   helpers do
 
     def handle_issue_opened_event(payload)
-      logger.debug 'An issue was opened!'
+      logger.debug payload
+      repo = payload["repository"]["full_name"]
+      number = payload["issue"]["number"]      
+      author = payload["issue"]["user"]["login"]
+      message = "Thank you for creating a new issue @" + author + ". \nOur team will look into this ASAP"
+      @installation_client.add_comment(repo, number, message)
     end
 
     # Saves the raw payload and converts the payload to JSON format
